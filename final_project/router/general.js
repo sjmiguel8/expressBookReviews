@@ -34,13 +34,25 @@ res.status(200).json(books);
 // Get book details based on ISBN
 public_users.get('/isbn/:isbn',function (req, res) {
   //Write your code here
-  return res.status(300).json({message: "Yet to be implemented"});
- });
+  const isbn = req.params.isbn;
+  const book = books[isbn];
+    if (book) {
+        res.status(200).json(book);
+    } else {
+        res.status(404).json({message: "No books found by ISBN"});
+    }
+} );
   
 // Get book details based on author
 public_users.get('/author/:author',function (req, res) {
   //Write your code here
-  return res.status(300).json({message: "Yet to be implemented"});
+  const author = req.params.author;
+  const booksByAuthor = Object.values(books).filter(book => book.author === author);
+    if (booksByAuthor.length > 0) {
+        res.status(200).json(booksByAuthor);
+    } else {
+        res.status(404).json({message: "No books found by author"});
+    }
 });
 
 // Get all books based on title
