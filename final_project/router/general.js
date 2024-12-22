@@ -3,7 +3,7 @@ let books = require("./booksdb.js");
 let isValid = require("./auth_users.js").isValid;
 let users = require("./auth_users.js").users;
 const public_users = express.Router();
-
+const axios = require('axios');
 
 public_users.post("/register", (req,res) => {
   //Write your code here
@@ -25,10 +25,36 @@ public_users.post("/register", (req,res) => {
 });
 
 // Get the book list available in the shop
-public_users.get('/',function (req, res) {
+public_users.get('/', function (req, res) {
+    res.status(200).json(Object.values(books));
+  });
+// Replace with the actual URLs of your books APIs
+const bookUrls = Object.values(books).map(book => book.url);
 
-  //Write your code here
-res.status(200).json(books);
+
+const fetchBooks = () => {
+    return new Promise((resolve, reject) => {
+      const booksPromises = bookUrls.map(url => axios.get(url));
+      Promise.all(booksPromises)
+        .then(booksResponses => {
+          const books = booksResponses.map(response => response.data);
+          resolve(books);
+        })
+        .catch(error => {
+          reject(new Error('Error fetching books: ' + error.message));
+        });
+    });
+  };
+  
+  // Get the book list available in the shop using Promises
+  public_users.get('/', function (req, res) {
+    fetchBooks()
+      .then((books) => {
+        res.status(200).json(books);
+      })
+      .catch((error) => {
+        res.status(500).json({ message: error.message });
+      });
 });
 
 // Get book details based on ISBN
