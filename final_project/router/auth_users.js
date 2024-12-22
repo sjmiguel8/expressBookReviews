@@ -78,22 +78,21 @@ const password = req.body.password;
 });
 
 // Add a book review
-regd_users.put("/auth/review/:isbn", (req, res) => {
-  const isbn = req.params.isbn;
+regd_users.put("/auth/review/:index", (req, res) => {
+  const index = req.params.index;
   const review = req.body.review;
   const authorization = req.session.authorization;
   if (!authorization) {
     return res.status(403).json({ message: "User not logged in" });
   }
   const username = authorization.username;
-  if (!authorization) {
-    return res.status(403).json({ message: "User not logged in" });
-  }
 
-  if (!books[isbn]) {
+  const bookKeys = Object.keys(books);
+  if (index < 1 || index > bookKeys.length) {
     return res.status(404).json({ message: "Book not found" });
   }
 
+  const isbn = bookKeys[index - 1];
   if (!books[isbn].reviews) {
     books[isbn].reviews = {};
   }
@@ -102,21 +101,27 @@ regd_users.put("/auth/review/:isbn", (req, res) => {
   return res.status(200).json({ message: "Review successfully posted", reviews: books[isbn].reviews });
 });
 
-regd_users.delete("/auth/review/:isbn", (req, res) => {
-    const isbn = req.params.isbn;
-    const username = req.session.authorization.username;
-  
-    if (!books[isbn]) {
-      return res.status(404).json({ message: "Book not found" });
-    }
-  
-    if (books[isbn].reviews && books[isbn].reviews[username]) {
-      delete books[isbn].reviews[username];
-      return res.status(200).json({ message: "Review successfully deleted", reviews: books[isbn].reviews });
-    } else {
-      return res.status(404).json({ message: "Review not found for this user" });
-    }
-  });
+regd_users.delete("/auth/review/:index", (req, res) => {
+  const index = req.params.index;
+  const authorization = req.session.authorization;
+  if (!authorization) {
+    return res.status(403).json({ message: "User not logged in" });
+  }
+  const username = authorization.username;
+
+  const bookKeys = Object.keys(books);
+  if (index < 1 || index > bookKeys.length) {
+    return res.status(404).json({ message: "Book not found" });
+  }
+
+  const isbn = bookKeys[index - 1];
+  if (!books[isbn].reviews || !books[isbn].reviews[username]) {
+    return res.status(404).json({ message: "Review not found" });
+  }
+
+  delete books[isbn].reviews[username];
+  return res.status(200).json({ message: "Review successfully deleted", reviews: books[isbn].reviews });
+});
 
 module.exports.authenticated = regd_users;
 module.exports.isValid = isValid;
