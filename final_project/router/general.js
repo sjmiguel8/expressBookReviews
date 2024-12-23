@@ -56,14 +56,18 @@ public_users.get('/', function (req, res) {
       });
   });
 
-// Get book details based on ISBN using async-await with Axios
+// Get book details based on ISBN
 public_users.get('/isbn/:isbn', async function (req, res) {
     const isbn = req.params.isbn;
     const book = books[isbn];
     if (book) {
       try {
-        const response = await axios.get(book.url);
-        res.status(200).json(response.data);
+        const bookDetails = {
+          title: book.title,
+          author: book.author,
+          url: book.url
+        };
+        res.status(200).json(bookDetails);
       } catch (error) {
         res.status(500).json({ message: error.message });
       }
